@@ -2,9 +2,9 @@ import classes
 from abc import abstractmethod, ABC
 
 
-class IShowRecord(ABC):
+class IRepr(ABC):
     @abstractmethod
-    def __init__(self, record: classes.Record):
+    def __init__(self):
         pass
 
     @abstractmethod
@@ -12,57 +12,7 @@ class IShowRecord(ABC):
         pass
 
 
-class IShowContacts(ABC):
-    @abstractmethod
-    def __init__(self, book: classes.AddressBook, n: int):
-        pass
-
-    @abstractmethod
-    def show_all(self):  # generates a string with next n contacts
-        pass
-
-
-class IShowNote(ABC):
-    @abstractmethod
-    def __init__(self, book: classes.AddressBook):
-        pass
-
-    @abstractmethod
-    def show(self):
-        pass
-
-
-class IShowNotes(ABC):
-    @abstractmethod
-    def __init__(self, book: classes.AddressBook):
-        pass
-
-    @abstractmethod
-    def show(self):
-        pass
-
-
-class IShowNoteList(ABC):
-    @abstractmethod
-    def __init__(self, book: classes.AddressBook):
-        pass
-
-    @abstractmethod
-    def show(self):
-        pass
-
-
-class IHelper(ABC):
-    @abstractmethod
-    def __init__(self, commands: list[str, int]):
-        pass
-
-    @abstractmethod
-    def show(self):
-        pass
-
-
-class Helper(IHelper):
+class Helper(IRepr):
     def __init__(self, commands: list):
         self.commands = commands
 
@@ -72,41 +22,7 @@ class Helper(IHelper):
         return "\t"+"\n\t".join(sorted_strings)
 
 
-class ShowNoteList(IShowNoteList):
-    def __init__(self, book: classes.AddressBook):
-        self.notes = book.notes
-
-    def show(self):
-        for each in self.notes.data.values():
-            print(each._name())
-        return ""
-
-
-class ShowNotes(IShowNotes):
-    def __init__(self, book: classes.AddressBook):
-        self.notes = book.notes
-
-    def show(self):
-        for note_id, note in self.notes.data.items():
-            print(f"Note ID: {note_id}")
-            print(note)
-        return ""
-
-
-class ShowNote(IShowNote):
-    def __init__(self, book: classes.AddressBook):
-        self.notes = book.notes
-
-    def show(self):
-        try:
-            note_id = self.notes.enter_name_id()
-            return self.notes.data[note_id]
-        except KeyError:
-            print("This note does not exists!")
-            return ""
-
-
-class ShowRecord(IShowRecord):
+class ShowRecord(IRepr):
     def __init__(self, record: classes.Record):
         self.record = record
 
@@ -136,12 +52,12 @@ class ShowRecord(IShowRecord):
         return string
 
 
-class ShowContacts(IShowContacts):
+class ShowContacts(IRepr):
     def __init__(self, book: classes.AddressBook, n: int):
         self.book = book
         self.n = n  # contacts per page
 
-    def show_all(self):
+    def show(self):
         if not self.book.data:
             return "Your phone book is empty."
         else:
@@ -171,3 +87,101 @@ class ShowContacts(IShowContacts):
                 self.book.reset_iterator(self.n)
                 self.book.page = 0
                 return ""
+
+
+class ShowNoteList(IRepr):
+    def __init__(self, book: classes.AddressBook):
+        self.notes = book.notes
+
+    def show(self):
+        out_str = ""
+        for each in self.notes.data.values():
+            out_str += each._name()
+            out_str += "\n"
+        return out_str
+
+
+class ShowNotes(IRepr):
+    def __init__(self, book: classes.AddressBook):
+        self.book = book
+
+    def show(self):
+        out_sting = ""
+        for n_id, note in self.book.notes.data.items():
+            out_sting += f"Note ID: {n_id}\n"
+            note_shower = ShowNote(self.book)
+            out_sting += note_shower.show(note_id=n_id)
+            out_sting += "\n"
+        if len(out_sting) > 2:
+            return out_sting[:-1]
+        else:
+            return out_sting
+
+
+class ShowNote(IRepr):
+    def __init__(self, book: classes.AddressBook):
+        self.notes = book.notes
+
+    def show(self, note_id=None):
+        try:
+            if note_id is None:
+                note_id = self.notes.enter_name_id()
+            note = "".join(self.notes.data.get(note_id).note)
+            out_sting = f"Name: {self.notes.data.get(note_id).name}\n"
+            out_sting += f"Tags: {self.notes.data.get(note_id).tags}\n"
+            out_sting += f"Note: {note}\n"
+            return out_sting
+
+        except KeyError:
+            print("This note does not exists!")
+            return ""
+
+
+# class IShowContacts(ABC):
+#     @abstractmethod
+#     def __init__(self, book: classes.AddressBook, n: int):
+#         pass
+#
+#     @abstractmethod
+#     def show_all(self):  # generates a string with next n contacts
+#         pass
+#
+#
+# class IShowNote(ABC):
+#     @abstractmethod
+#     def __init__(self, book: classes.AddressBook):
+#         pass
+#
+#     @abstractmethod
+#     def show(self):
+#         pass
+#
+#
+# class IShowNotes(ABC):
+#     @abstractmethod
+#     def __init__(self, book: classes.AddressBook):
+#         pass
+#
+#     @abstractmethod
+#     def show(self):
+#         pass
+
+
+# class IShowNoteList(ABC):
+#     @abstractmethod
+#     def __init__(self, book: classes.AddressBook):
+#         pass
+#
+#     @abstractmethod
+#     def show(self):
+#         pass
+#
+#
+# class IHelper(ABC):
+#     @abstractmethod
+#     def __init__(self, commands: list[str, int]):
+#         pass
+#
+#     @abstractmethod
+#     def show(self):
+#         pass

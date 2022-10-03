@@ -298,7 +298,7 @@ def show_all(book: AddressBook, text: str = ""):
     except ValueError:
         n = book.contacts_per_page
     book_reader = show_info.ShowContacts(book, n)
-    return book_reader.show_all()
+    return book_reader.show()
 
 
 @decorator
